@@ -1,11 +1,15 @@
-<?php 
+<?php
+	error_reporting(E_ERROR | E_WARNING | E_PARSE);
+	
 	require('liar.css.php');
 	
 	class HTMLiar
 	{
 		static $config;
 		
-		public static function run()
+		static $css_rules = array();
+		
+		public static function RunApplication()
 		{
 			self::$config = parse_ini_file('config.ini', true);
 			if (!empty(self::$config))
@@ -21,7 +25,7 @@
 			{
 				try
 				{
-					$parse_state =  new HTMLie_CSS( $cssFile );
+					$parse_state =  HTMLie_CSS::Init( $cssFile );
 					if (! $parse_state  )
 					{
 						throw new Exception('Couldn\'t parse ' . $cssFile);
@@ -32,8 +36,10 @@
 					echo $e->getMessage();
 				}
 			}
+			
+			//print_r(self::$css_rules);
 		}
 	}
 	
-	HTMLiar::run();
+	HTMLiar::RunApplication();
 ?>

@@ -1,16 +1,19 @@
 <?php 
 
 	define('MINIFY' , true);
+	define('WORD_LENGTH', 40); // set max characters in words (will be moved in config soon)
 	
 	require('libs/css_parser/cssparser.php');
 	
-	class HTMLie_CSS
+	class HTMLie_CSS extends HTMLiar
 	{
 	
-		var $content = "";
-		var $parseInstance;
+		static $content = "";
+		static $parseInstance;
 		
-		public function __construct($cssFile)
+		
+		
+		public function Init($cssFile)
 		{	
 		
 			if (!file_exists($cssFile)) 
@@ -28,23 +31,55 @@
 				}
 				else
 				{
-					$this->content = $content;
+					self::$content = $content;
 					
-					$this->run(); // init logic
+					return self::RunParseCSS(); // init logic
 				}
 			}
 		}
 		
-		
-		public function run()
+		/*
+		  Generates a valid class name
+		  @param $language You can send php, js, css. If css is used it will safely use the "-" symbol
+		*/
+		public function generateRandomName($language = "php")
 		{
+			$ln = array(
+				'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z', // letters
+				'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z', // letters caps
+				'0','1','2','3','4','5','6','7','8','9', //numbers
+				'_' , 
+			);
+			
+			if ($language == "css") $ln[] = "-";
 		
-			/**
-				@TODO: Write logic -> Build mapped array of data
-					[.link] => '.q_QWei12',
-					[#facebook'] => '#hywyqq12'
-			**/
-			$content = $this->content;
+			
+			// start with a letter 
+			$name = $ln[mt_rand(0, 45)];
+			//set word length
+			$length = mt_rand(5 , WORD_LENGTH);
+			
+			$i = 0;
+			
+			
+			while ($i < $length)
+			{
+				
+				$name .= $ln[mt_rand(0,count($ln))];
+				
+				$i++;
+			}
+			
+			return $name;
+		}
+		
+		public function RunParseCSS()
+		{
+
+			$content = self::$content;
+			
+			$css_rules = array();
+			
 			
 			$safe_tags = array(
 			
@@ -57,15 +92,24 @@
 				'details', 'embed', 'figure', 'figcaption', 'footer', 'header', 'hgroup','menu',
 				'nav', 'output', 'ruby', 'section', 'summary','time', 'mark', 'audio', 'video',
 				'article', 'aside', 'details', 'figcaption', 'figure','footer', 'header', 'hgroup',
-				'menu', 'nav', 'section', 'input', 'em' , 'pre' , // html usable tags
+				'menu', 'nav', 'section', 'input', 'em' , 'pre' , // html usable tags and HTML5 tags
 				
 				'xml','script','link', 'style','title','meta', 'head', // non usable tags
 				
-				// Forgot 
+				// Updated HTML Tags (even deprecated)
 				'applet', 'area', 'base','basefont','bdo', 'button', 'colgroup', 'dir', 'font',
 				'frame', 'frameset', 'hr' , 'ins', 'isindex', 'map', 'noframes', 'noscript',
-				'optgroup', 'option', 'param', 'select', 'textarea'
+				'optgroup', 'option', 'param', 'select', 'textarea',
+				
+				// Unnecessary CSS rules
+				'active','after','before','checked','disabled','empty','enabled','first-child','first-letter',
+				'first-line','first-of-type','focus','hover','lang','last-child','last-of-type','link','not',
+				'nth-child','nth-last-child','nth-last-of-type','nth-of-type','only-child','only-of-type','root',
+				'target','visited'
+
 			);
+			
+			
 			
 			// $results = array();
 			$replaces = array(
@@ -80,33 +124,53 @@
 				$content = preg_replace( $regex, '', $content );
 			}
 			
-			//$content = preg_replace( '#\/\*.+\*\/#' , '' , $content);
-			
-			//$content  = preg_replace($replaces , '', $content);
-			print_r($content);
 			
 			
-			// if (preg_match_all( '/(\n|\r)/is' , $content , $matches ) )
-			// {
-				// print_r($matches);
-			// }
+			
 
-			// preg_match_all('/(.+?)\s?\{\s?(.+?)\s?\}/', $content, $matches);
-			// foreach($matches[0] AS $i=>$original)
-				// foreach(explode(';', $matches[2][$i]) AS $attr)
-						// if (strlen($attr) > 0) // for missing semicolon on last element, which is legal
-						// {
-								// list($name, $value) = explode(':', $attr);
-								// $results[$matches[1][$i]][trim($name)] = trim($value);
-						// }
-			// print_r( $results );
-
+			 preg_match_all('/(\w+)?(\s*>\s*)?(#\w+)?\s*(\.\w+)?\s*{/is', $content, $matches);
+			 
+			 foreach($matches[0] AS $i=>$original) {
+				
+				/* Replace the leading semicolon, spaces and tabs in classnames */
+				$css = str_replace(array("{" , " ", "\t") , "", $original);
+				
+				if (!empty($css))
+				{
+					if (!in_array( $css ,parent::$css_rules ))
+					{
+						// UPDATE
+						/* It happens there is a class a.padding and it's being captured, we'll make sure to grab .padding */
+						$match = preg_match('/(\.|\#)\w*$/is' , $css , $matches);
+						if (empty($matches[0])) continue;
+						parent::$css_rules[$matches[0]] = self::generateRandomName("css");
+					}
+				}
+			 }
 			
-		}
-		
+			
+			
+			// remove all the safe tags from the css rules
+			
+			foreach(parent::$css_rules as $i=>$css_item)
+			{
+				
+				if (in_array($i, $safe_tags))
+				{
+					unset(parent::$css_rules[$i]);
+					
+				}
+			}
+			
+			
+			return true;	
+		}		
 		public function ReplaceCSSClass()
 		{
-			
+					
+			/**
+				@TODO: Write logic -> Take mapped items and replace them in *.html , *.js, *.xml or whatever the user supplies
+			**/
 		}
 	}
 ?>
