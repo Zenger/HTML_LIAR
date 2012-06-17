@@ -2,6 +2,8 @@
 	error_reporting(E_ERROR | E_WARNING | E_PARSE);
 	
 	require('liar.css.php');
+	require('liar.html.php');
+	require('HTMLiar.parser.php');
 	
 	class HTMLiar
 	{
@@ -21,6 +23,7 @@
 		
 		public static function initApp()
 		{
+			/* Parses all CSS files and builds a map of Linked CSS rules */
 			foreach(self::$config['css']['css'] as $cssFile)
 			{
 				try
@@ -37,8 +40,22 @@
 				}
 			}
 			
-			//print_r(self::$css_rules);
+			/* After the CSS Map is built, this parses all the HTML and JS and replaces the css classes with new ones, and minyfies */
+			
+			try
+			{
+				HTMLiarParser::RunParser();
+				
+			}
+			catch(Exception $e)
+			{
+				echo "ERROR : " . $e->getMessage();
+				
+			}
 		}
+		
+		
+		
 	}
 	
 	HTMLiar::RunApplication();

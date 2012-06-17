@@ -2,8 +2,7 @@
 
 	define('MINIFY' , true);
 	define('WORD_LENGTH', 40); // set max characters in words (will be moved in config soon)
-	
-	require('libs/css_parser/cssparser.php');
+
 	
 	class HTMLie_CSS extends HTMLiar
 	{
@@ -109,31 +108,14 @@
 
 			);
 			
-			
-			
-			// $results = array();
-			$replaces = array(
-				'/(?:\r\n|\n|\r)+/is', // replaces new lines
-				'/\/\*.+?\*\//is', // removes comments
-			);
-			
-			
-			foreach($replaces as $regex)
-			{
-			
-				$content = preg_replace( $regex, '', $content );
-			}
-			
-			
-			
-			
-
+			$content = self::CleanCSS($content);
+				
 			 preg_match_all('/(\w+)?(\s*>\s*)?(#\w+)?\s*(\.\w+)?\s*{/is', $content, $matches);
 			 
 			 foreach($matches[0] AS $i=>$original) {
 				
 				/* Replace the leading semicolon, spaces and tabs in classnames */
-				$css = str_replace(array("{" , " ", "\t") , "", $original);
+				$css = str_replace(array("{" , "\t") , "", $original);
 				
 				if (!empty($css))
 				{
@@ -143,7 +125,10 @@
 						/* It happens there is a class a.padding and it's being captured, we'll make sure to grab .padding */
 						$match = preg_match('/(\.|\#)\w*$/is' , $css , $matches);
 						if (empty($matches[0])) continue;
-						parent::$css_rules[$matches[0]] = self::generateRandomName("css");
+						
+						
+						/* Send match to parent */	  /* is a class or id */       /* random name */
+						parent::$css_rules[$matches[0]] = substr($matches[0] , 0, 1) .self::generateRandomName("css");
 					}
 				}
 			 }
@@ -171,6 +156,25 @@
 			/**
 				@TODO: Write logic -> Take mapped items and replace them in *.html , *.js, *.xml or whatever the user supplies
 			**/
+		}
+		
+		
+		public function CleanCSS($content)
+		{
+			
+			$replaces = array(
+				'/(?:\r\n|\n|\r)+/is', // replaces new lines
+				'/\/\*.+?\*\//is', // removes comments
+			);
+			
+			
+			foreach($replaces as $regex)
+			{
+			
+				$content = preg_replace( $regex, '', $content );
+			}
+			
+			return $content;
 		}
 	}
 ?>
