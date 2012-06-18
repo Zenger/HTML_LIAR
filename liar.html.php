@@ -38,18 +38,39 @@
             
             $html = $htmlDom->getElementByTagName('html');
             
-            $parse = self::Childrens($html);
+			self::Childrens($html);
         }
         
-        public static function Childrens($html)
+        public static function Childrens($html , $index = null)
         {
-            $children = $html->childNodes();
+            $children = $html->children();
             
             if (!empty($children))
             {
-                foreach($children as $i)
+                foreach($children as $k => $i)
                 {
-                    
+                    $class = (!empty($i->{'class'})) ? explode(" " , $i->{'class'} ) : false;
+					$id = (!empty($i->id)) ? $i->id : false;
+					
+					/* @TODO:Work this path */
+					if ($class !== false) { 
+					
+						echo "HAS CLASS : " . $i->{'class'} ;
+						
+						foreach($class as $existing_class)
+						{
+							$space = (count($class) > 1) ? " " : "";
+							$new_class .= str_replace('.' , '' , parent::$css_rules[".".$existing_class] ) . $space;
+						}
+						
+						echo "  REPLACED WITH : ". $new_class . "<br />";
+					
+					}
+					
+					
+					
+					
+					if ($i->children() <> 0) self::Childrens($i , $k);
                 }
             }
         }

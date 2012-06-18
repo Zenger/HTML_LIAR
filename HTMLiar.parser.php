@@ -50,9 +50,11 @@
                 }
                 
                 /* Write */
-                $fh = fopen($cssFile, 'w');
+              /*
+				$fh = fopen($cssFile, 'w');
                 fwrite($fh, $content);
-                fclose($fh);
+                fclose($fh); 
+			   */
             }
             
         }
