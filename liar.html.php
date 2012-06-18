@@ -51,21 +51,25 @@
                 {
                     $class = (!empty($i->{'class'})) ? explode(" " , $i->{'class'} ) : false;
 					$id = (!empty($i->id)) ? $i->id : false;
+					print_r(parent::$css_rules);
 					
-					/* @TODO:Work this path */
-					if ($class !== false) { 
+					// /* @TODO:Work this path */
+					// if ($class !== false) { 
 					
-						echo "HAS CLASS : " . $i->{'class'} ;
+						// echo "HAS CLASS : " . $i->{'class'} ;
 						
-						foreach($class as $existing_class)
-						{
-							$space = (count($class) > 1) ? " " : "";
-							$new_class .= str_replace('.' , '' , parent::$css_rules[".".$existing_class] ) . $space;
-						}
-						
-						echo "  REPLACED WITH : ". $new_class . "<br />";
+						// $_i = 0;
 					
-					}
+						// while($_i < count($class))
+						// {
+							// $space = (count($class) > 1) ? " " : "";
+							// $new_class .= str_replace('.' , '' , parent::$css_rules[".".$class[$_i]] ) . $space;
+							// $_i++;
+						// }
+						
+						// echo "  REPLACED WITH : ". $new_class . "<br />";
+					
+					// }
 					
 					
 					

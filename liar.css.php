@@ -109,13 +109,16 @@
 			);
 			
 			$content = self::CleanCSS($content);
-				
-			 preg_match_all('/(\w+)?(\s*>\s*)?(#\w+)?\s*(\.\w+)?\s*{/is', $content, $matches);
-			 
+			 /* @TODO: Work this , must fix so it grabs \- */
+			 preg_match_all('/((\w|\-)+)?(\s*>\s*)?(#(\w|\-)+)?\s*(\.(\w|\-)+)?\s*{/Uis', $content, $matches);
+			 //preg_match_all('/((\w|\-)+)?((\s|\-)*>(\s|\-)*)?(#(\w|\-)+)?(\s|\-)*(\.(\w|\-)+)?(\s|\-)*{/is', $content, $matches);
+			
 			 foreach($matches[0] AS $i=>$original) {
 				
-				/* Replace the leading semicolon, spaces and tabs in classnames */
+				/* Replace the leading semicolon, and tabs in classnames */
 				$css = str_replace(array("{" , "\t") , "", $original);
+				
+				echo $css . "<br />";
 				
 				if (!empty($css))
 				{
@@ -125,8 +128,7 @@
 						/* It happens there is a class a.padding and it's being captured, we'll make sure to grab .padding */
 						$match = preg_match('/(\.|\#)\w*$/is' , $css , $matches);
 						if (empty($matches[0])) continue;
-						
-						
+
 						/* Send match to parent */	  /* is a class or id */       /* random name */
 						parent::$css_rules[$matches[0]] = substr($matches[0] , 0, 1) .self::generateRandomName("css");
 					}
