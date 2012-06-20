@@ -1,7 +1,7 @@
 <?php 
 
 	define('MINIFY' , true);
-	define('WORD_LENGTH', 40); // set max characters in words (will be moved in config soon)
+	
 
 	
 	class HTMLie_CSS extends HTMLiar
@@ -37,40 +37,7 @@
 			}
 		}
 		
-		/*
-		  Generates a valid class name
-		  @param $language You can send php, js, css. If css is used it will safely use the "-" symbol
-		*/
-		public function generateRandomName($language = "php")
-		{
-			$ln = array(
-				'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z', // letters
-				'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z', // letters caps
-				'0','1','2','3','4','5','6','7','8','9', //numbers
-				'_' , 
-			);
-			
-			if ($language == "css") $ln[] = "-";
 		
-			
-			// start with a letter 
-			$name = $ln[mt_rand(0, 45)];
-			//set word length
-			$length = mt_rand(5 , WORD_LENGTH);
-			
-			$i = 0;
-			
-			
-			while ($i < $length)
-			{
-				
-				$name .= $ln[mt_rand(0,count($ln))];
-				
-				$i++;
-			}
-			
-			return $name;
-		}
 		
 		public function RunParseCSS()
 		{

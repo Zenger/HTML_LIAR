@@ -4,12 +4,9 @@
     
     class HTMLie_HTML extends HTMLiar
     {
-        /*$str = '<h1>T1</h1>Lorem ipsum.<h1>T2</h1>The quick red fox...<h1>T3</h1>... jumps over the lazy brown FROG';
-            $DOM = new DOMDocument;
-            $DOM->loadHTML($str);
-        */
+       
         
-        public static function CleanHTML($content = null)
+        public static function Uglify_Html($content = null)
         {
                 $replaces = array(
                         '/(?:\r\n|\n|\r)+/is', // replaces new lines
@@ -32,51 +29,102 @@
         }
         
         
-        public static function ReplaceHTML($content)
+        public static function Map($htmlFile)
         {
-            $htmlDom = new simple_html_dom($content);
-            
+            /* Grab content */
+            $htmlContent = file_get_contents($htmlFile);
+            /* Throw content to simple_html_dom */
+            $htmlDom = new simple_html_dom($htmlContent);
             $html = $htmlDom->getElementByTagName('html');
             
-			self::Childrens($html);
+            /* Walk the dom and map the data to a parent var */
+            self::MapWalk($html);
+            
+            /* Save the new file */
+            
+           $content = $htmlDom->save();
+           if (UGLIFY_HTML == true)
+           {
+                $content = self::Uglify_Html($content);
+           }
+           file_put_contents( FOLDER . "/" . str_replace("../" , '' , $htmlFile) , $content ) ;
+            
         }
-        
-        public static function Childrens($html , $index = null)
+        /* Walks the children recursively
+          @param $html supplie the starting point (usually the <html> tag as index)
+          @param $index the key index, required for recursive walk
+        */
+        public static function MapWalk($html , $index = null)
         {
             $children = $html->children();
-            
             if (!empty($children))
             {
                 foreach($children as $k => $i)
                 {
+                    
                     $class = (!empty($i->{'class'})) ? explode(" " , $i->{'class'} ) : false;
-					$id = (!empty($i->id)) ? $i->id : false;
-					print_r(parent::$css_rules);
-					
-					// /* @TODO:Work this path */
-					// if ($class !== false) { 
-					
-						// echo "HAS CLASS : " . $i->{'class'} ;
-						
-						// $_i = 0;
-					
-						// while($_i < count($class))
-						// {
-							// $space = (count($class) > 1) ? " " : "";
-							// $new_class .= str_replace('.' , '' , parent::$css_rules[".".$class[$_i]] ) . $space;
-							// $_i++;
-						// }
-						
-						// echo "  REPLACED WITH : ". $new_class . "<br />";
-					
-					// }
-					
-					
-					
-					
-					if ($i->children() <> 0) self::Childrens($i , $k);
+                    $id = (!empty($i->id)) ? $i->id : false;
+                    
+                    if ($class)
+                    {
+                         /* walk dom, find class or id, try to search it's value in array, if it doesn't exist in global array, append a new name,
+                           and replace the class with new name*/
+                           
+                        foreach($class as $single_class)
+                        {
+               
+                            /* Give logical names to existing, and new class*/
+                            $__new_class = "." . $single_class;
+                            $__new_replace = "." . HTMLiar::generateRandomName("css");
+                            
+                            /* If class doesn't exist in parent array, insert it and giv it logical replacement */
+                            
+                            if (!in_array($__new_class , parent::$css_rules))
+                            {
+                                 /* Keep Classes for further files */
+                                parent::$css_rules[$__new_class] = $__new_replace;
+                                $set_of_classes .= str_replace(".", "", $__new_replace) . " ";
+                            }
+                            else
+                            {
+                                $set_of_classes .= str_replace(".", "", parent::$css_rules[$__new_class] ) . " ";
+                            }
+                        
+                           
+                        }
+                        
+                        
+                        $i->{'class'} = trim($set_of_classes);
+                    }
+
+                    if ($id)
+                    {
+                            /* Give logical names to existing, and new class*/
+                            $__new_id = "#" . $id;
+                            $__new_replace = "#" . HTMLiar::generateRandomName("css");
+                            
+                            /* If class doesn't exist in parent array, insert it and giv it logical replacement */
+                            
+                            if (!in_array($__new_id , parent::$css_rules))
+                            {
+                                 /* Keep Classes for further files */
+                                parent::$css_rules[$__new_id] = $__new_replace;
+                                $set_of_id .= str_replace("#","", $__new_replace);
+                            }
+                            else
+                            {
+                                $set_of_id .= str_replace("#","", parent::$css_rules[$__new_id]);
+                            }
+                        $i->id = $set_of_id;
+                    }
+                    
+                    
+                    if ($i->children() <> 0) self::MapWalk($i , $k);
                 }
             }
         }
+        
+        
+      
     }
 ?>
