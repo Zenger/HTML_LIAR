@@ -1,17 +1,25 @@
 <?php
 	error_reporting(E_ERROR | E_WARNING | E_PARSE);
 	
+	define("HTMLiar_Version" , "0.2.4"); // Project Version
 	
 	define('WORD_LENGTH', 40); // set max characters in words (will be moved in config soon)
 	
-	define("FOLDER" , "ENCODED_HTML"); // Folder name
+	define("HTMLiar_Write_Folder" , "ENCODED_HTML"); // Folder name
+	
+	define("UGLIFY_HTML" , true); // removes comments, new lines in HTML
+	define("UGLIFY_CSS"  , true); // removes comments, new lines in CSS
+	define("UGLIFY_JS"   , true); // soon
+	
+	define("HTMLiar_Location_NoFolder" , dirname(dirname(__FILE__)) .DIRECTORY_SEPARATOR );
+	define("HTMLiar_Location" ,  HTMLiar_Location_NoFolder . basename(dirname(__FILE__) ) );
 	
 	
-	define("UGLIFY_HTML" , true); // removes comments, new lines
-			
+	define("__show_generator" , true);
+	define("__generator_string", "Generated with HTMLiar ". HTMLiar_Version . ". Project at https://github.com/Zenger/HTML_LIAR");
+	
 	require('liar.css.php');
 	require('liar.html.php');
-	require('HTMLiar.parser.php');
 	
 	class HTMLiar
 	{
@@ -28,18 +36,25 @@
 			}
 		}
 		
+		/* Helper function , checks if sring is empty or not and replaces with a default value */
+		public static function df( $string , $default = "")
+		{
+			$string = trim($string);
+			return (empty($string)) ? $default : $string;
+		}
+		
 		
 		public static function initApp()
 		{
 		
 			// Create folder and make it writable
-			if (!file_exists( FOLDER ))
+			if (!file_exists( HTMLiar_Write_Folder ))
 			{
-				if (!mkdir( FOLDER , '0777'))
+				if (!mkdir( HTMLiar_Write_Folder , '0777'))
 				{
-					die("Can't create folder for job. You can create folder at '".FOLDER."'. ");
+					die("Can't create folder for job. You can create folder at '".HTMLiar_Write_Folder."'. ");
 				}
-				@chmod(FOLDER , '0777'); //just for easyness
+				@chmod(HTMLiar_Write_Folder , '0777'); //just for easyness
 			}
 			
 			// Parse HTML Files Build Map of css classes and #ids
@@ -55,22 +70,20 @@
 				}
 			}
 			
-			/* Walks in dom, replaces css, id's, based on generated map */
-			//HTMLie_HTML::ReplaceHTML();
 			
-			/* After the CSS Map is built, this parses all the HTML and JS and replaces the css classes with new ones, and minyfies */
-			/*
-			try
+			// Now parse CSS and replace css and id with new Classes and Id's
+			foreach(self::$config['css']['css'] as $cssFile)
 			{
-				HTMLiarParser::RunParser();
-				
+				try
+				{
+					HTMLie_CSS::Map($cssFile);
+				}
+				catch (Exception $e)
+				{
+					echo $e->getMessage();
+				}
 			}
-			catch(Exception $e)
-			{
-				echo "ERROR : " . $e->getMessage();
-				
-			}
-			*/
+		
 		}
 		
 		
@@ -109,7 +122,31 @@
 			return $name;
 		}
 		
+		public static function Create_Dir( $file )
+		{
+			$realpath = realpath($file);
+			$path = str_replace( array( HTMLiar_Location_NoFolder , basename($file)  ), '' , $realpath);
+			$path = HTMLiar_Location . DIRECTORY_SEPARATOR . HTMLiar_Write_Folder. DIRECTORY_SEPARATOR .  $path;
+			@mkdir( $path , 0777 , true );
+		}	
 		
+		public static function File_Location( $fileLocation )
+		{
+			$path = HTMLiar_Location . DIRECTORY_SEPARATOR . FOLDER . DIRECTORY_SEPARATOR;
+			if (!file_exists( $fileLocation) )
+			{
+				throw new Exception("File doesn't exist at " . $fileLocation . " . <br /> Check file paths in config");
+				return false;
+			}
+			else
+			{
+				$writepath = HTMLiar_Location . DIRECTORY_SEPARATOR . HTMLiar_Write_Folder . DIRECTORY_SEPARATOR;
+				$realpath =  str_replace(HTMLiar_Location_NoFolder , $writepath  , realpath( $fileLocation ) );
+				
+				return $realpath;
+				
+			}
+		}
 	}
 	
 	HTMLiar::RunApplication();

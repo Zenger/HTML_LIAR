@@ -47,7 +47,15 @@
            {
                 $content = self::Uglify_Html($content);
            }
-           file_put_contents( FOLDER . "/" . str_replace("../" , '' , $htmlFile) , $content ) ;
+	   
+	   if (__show_generator)
+	   {
+		$content = "<!-- ".__generator_string." -->". PHP_EOL . $content;
+		$content .= PHP_EOL . "<!-- ".__generator_string." -->";
+	   }
+	   
+           file_put_contents( HTMLiar::File_Location( $htmlFile ) , $content );
+	   
             
         }
         /* Walks the children recursively
@@ -68,7 +76,7 @@
                     if ($class)
                     {
                          /* walk dom, find class or id, try to search it's value in array, if it doesn't exist in global array, append a new name,
-                           and replace the class with new name*/
+                           and replace the class with new name */
                            
                         foreach($class as $single_class)
                         {

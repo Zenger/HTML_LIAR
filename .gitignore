@@ -1,2 +1,4 @@
-HTML_LIAR.komodoproject
+*.komodoproject
 .komodotools/*
+deprecated/*
+deprecated
